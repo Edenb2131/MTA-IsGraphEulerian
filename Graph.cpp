@@ -93,7 +93,7 @@ bool DirectedGraph::isEntryLevelAndExitLevelEqual() {
 
 void DirectedGraph::isEulerian() {
     
-    int visited[size];
+    int* visited = new int[size];
     DFS(*this, visited);
     
     if(isStrongConnected(visited) && isEntryLevelAndExitLevelEqual()) {
@@ -101,7 +101,8 @@ void DirectedGraph::isEulerian() {
     } else {
         cout << "The graph is not Eulerian" << endl;
     }
-    
+
+    delete [] visited;
 }
 
 void DirectedGraph::printEulerianPath() {
@@ -142,14 +143,20 @@ void UndirectedGraph::addEdge(int src, int dest) {
 }
 
 bool UndirectedGraph::isConnected() {
-    int visited[size];
+    int* visited = new int[size];
+    bool isConnected = true;
+
     DFS(*this, visited);
-    for (int i = 0; i < size; i++) {
+
+    for (int i = 0; i < size && isConnected; i++) {
         if (visited[i] != Black) {
-            return false;
+            isConnected = false;
         }
     }
-    return true;
+
+    delete[] visited;
+
+    return isConnected;
 }
 
 bool UndirectedGraph::isAllLevelsOfEdgesEven() {

@@ -1,0 +1,34 @@
+name: Run clang-format Linter
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/clang-format.yaml"
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: DoozyX/clang-format-lint-action@v0.14
+        with:
+          source: "./"
+          exclude: "*.vcxproj*"
+          extensions: "h,cpp,c"
+          style: "microsoft"
+          clangFormatVersion: 14
+          inplace: True
+      - uses: EndBug/add-and-commit@v4
+        with:
+          author_name: Clang Robot
+          author_email: robot@example.com
+          message: "style: clang-format all files"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
