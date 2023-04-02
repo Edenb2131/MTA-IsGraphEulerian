@@ -16,7 +16,7 @@ Graph::Graph(int size, bool isDirected)
 // Print the graph
 void Graph::printGraph()
 {
-    for (int i = 0; i < size; i++)
+    for (int i = 1; i < size; i++)
     {
         cout << i << ": ";
         for (int j : adjacencyList[i])
@@ -31,11 +31,12 @@ void Graph::DFS(Graph &g, int *visited)
 {
     int size = g.getSize();
 
-    for (int i = 0; i < size; i++)
+    for (int i = 1; i < size; i++)
     {
         visited[i] = White;
     }
-    for (int i = 0; i < size; i++)
+
+    for (int i = 1; i < size; i++)
     {
         if (visited[i] == White)
         {
@@ -44,9 +45,10 @@ void Graph::DFS(Graph &g, int *visited)
     }
 }
 
-void Graph::visit(int v, int visited[])
+void Graph::visit(int v, int *visited)
 {
     visited[v] = Gray;
+
     for (int i : adjacencyList[v])
     {
         if (visited[i] == White)
@@ -54,6 +56,7 @@ void Graph::visit(int v, int visited[])
             visit(i, visited); // (v, i) is a tree edge
         }
     }
+
     visited[v] = Black;
 }
 
@@ -66,28 +69,31 @@ void DirectedGraph::addEdge(int src, int dest)
 }
 
 // Checks if directed graph is strongly connected
-bool DirectedGraph::isStrongConnected(const int *visited)
+bool DirectedGraph::isStrongConnected(int *visited)
 {
-    for (int i = 0; i < size; i++)
+    for (int i = 1; i < size; i++)
     {
         if (visited[i] != Black)
         {
             return false;
         }
     }
+
     return true;
 }
 
 bool DirectedGraph::isEntryLevelAndExitLevelEqual()
 {
-    int *entryLevel = new int[size];
-    int *exitLevel = new int[size];
-    for (int i = 0; i < size; i++)
+    vector<int> entryLevel(size);
+    vector<int> exitLevel(size);
+
+    for (int i = 1; i < size; i++)
     {
         entryLevel[i] = 0;
         exitLevel[i] = 0;
     }
-    for (int i = 0; i < size; i++)
+
+    for (int i = 1; i < size; i++)
     {
         for (int j : adjacencyList[i])
         {
@@ -95,7 +101,8 @@ bool DirectedGraph::isEntryLevelAndExitLevelEqual()
             exitLevel[i]++;
         }
     }
-    for (int i = 0; i < size; i++)
+
+    for (int i = 1; i < size; i++)
     {
         if (entryLevel[i] != exitLevel[i])
         {
@@ -103,20 +110,19 @@ bool DirectedGraph::isEntryLevelAndExitLevelEqual()
         }
     }
 
-    delete[] entryLevel;
-    delete[] exitLevel;
-
     return true;
 }
 
 void DirectedGraph::isEulerian()
 {
     int *visited = new int[size];
+
     DFS(*this, visited);
 
     if (isStrongConnected(visited) && isEntryLevelAndExitLevelEqual())
     {
         cout << "The graph is Eulerian" << endl;
+        printEulerianPath();
     }
     else
     {
@@ -145,7 +151,6 @@ void DirectedGraph::printEulerianPath()
         {
             int next = adjacencyList[current].front();
             adjacencyList[current].pop_front();
-            adjacencyList[next].remove(current);
             path.push_back(next);
             current = next;
         }
@@ -170,7 +175,7 @@ bool UndirectedGraph::isConnected()
 
     DFS(*this, visited);
 
-    for (int i = 0; i < size && isConnected; i++)
+    for (int i = 1; i < size && isConnected; i++)
     {
         if (visited[i] != Black)
         {
@@ -179,33 +184,47 @@ bool UndirectedGraph::isConnected()
     }
 
     delete[] visited;
-
     return isConnected;
 }
 
 bool UndirectedGraph::isAllLevelsOfEdgesEven()
 {
-    int *levels = new int[size];
-    for (int i = 0; i < size; i++)
+    vector<int> levels;
+    levels.reserve(size);
+    int numOfVerticesWithOddEdges = 0;
+    std::vector<std::list<int>> adjacencyListCopy = adjacencyList;
+
+    for (int i = 1; i < size; i++)
     {
         levels[i] = 0;
     }
-    for (int i = 0; i < size; i++)
+
+    for (int i = 1; i < size; i++)
     {
-        for (int j : adjacencyList[i])
+        while (!adjacencyListCopy[i].empty())
         {
+            int j = adjacencyListCopy[i].front();
             levels[i]++;
             levels[j]++;
+            adjacencyListCopy[i].remove(j);
+            adjacencyListCopy[j].remove(i);
         }
     }
-    for (int i = 0; i < size; i++)
+
+    for (int i = 1; i < size; i++)
     {
         if (levels[i] % 2 != 0)
         {
+            // numOfVerticesWithOddEdges++;
             return false;
         }
     }
-    delete[] levels;
+
+    // if (numOfVerticesWithOddEdges != 0 && numOfVerticesWithOddEdges != 2)
+    // {
+    //     return false;
+    // }
+
     return true;
 }
 
