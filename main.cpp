@@ -1,96 +1,100 @@
-#include <iostream>
-#include <exception>
 #include "Graph.h"
+#include <exception>
+#include <iostream>
 
 using namespace std;
 
-
 // Getting input from user regarding the setting of the graph
-void getInputFromUser(char &isDirected, int &numOfVertices, int &numOfEdges) {
-    
+void getInputFromUser(char &isDirected, int &numOfVertices, int &numOfEdges)
+{
+
     cout << "Is the graph directed? (y/n)" << endl;
     cin >> isDirected;
-    
-    
+
     // Check if the input is valid
     if (isDirected != 'y' && isDirected != 'n' && isDirected != 'Y' && isDirected != 'N')
         throw exception();
-        
+
     cout << "Please enter the number of vertices in the graph:" << endl;
     cin >> numOfVertices;
-    
-    
-    
+
     cout << "Please enter the number of edges in the graph:" << endl;
     cin >> numOfEdges;
-    
-    
+
     // We change number of vertices to start from 1 instead of 0
     numOfVertices++;
-  
 }
 
-void getEdgesFromUser(int numOfEdges, int numOfVertices, Graph *graph) {
+void getEdgesFromUser(int numOfEdges, int numOfVertices, Graph *graph)
+{
 
     int src, dest;
-    for (int i = 0; i < numOfEdges; i++) {
-        //cout << "Please enter the source and destination of edge " << i << ":" << endl;
+    for (int i = 0; i < numOfEdges; i++)
+    {
+        // cout << "Please enter the source and destination of edge " << i << ":" << endl;
         cin >> src >> dest;
-        
+
         // Check if the input is valid
-        if (src < 0 || src >= numOfVertices+1 || dest < 0 || dest >= numOfVertices+1)
+        if (src < 0 || src >= numOfVertices + 1 || dest < 0 || dest >= numOfVertices + 1)
             throw exception();
-        
-        
+
         graph->addEdge(src, dest);
     }
 }
 
-int main() {
-    
+int main()
+{
+
     char isDirected;
-    int numOfVertices;  // This will be the required n
-    int numOfEdges;     // This will be the required m
-    
-    try {
+    int numOfVertices; // This will be the required n
+    int numOfEdges;    // This will be the required m
+
+    try
+    {
         getInputFromUser(isDirected, numOfVertices, numOfEdges);
     }
-    catch (exception &e) {
+    catch (exception &e)
+    {
         cout << "Error: Invalid input" << endl;
         exit(1);
     }
-    
-    if(isDirected == 'y' || isDirected == 'Y') {
-        DirectedGraph graph(numOfVertices);     // Create a directed graph
-        
-        try {
+
+    if (isDirected == 'y' || isDirected == 'Y')
+    {
+        DirectedGraph graph(numOfVertices); // Create a directed graph
+
+        try
+        {
             getEdgesFromUser(numOfEdges, numOfVertices, &graph);
         }
-        catch (exception &e) {
+        catch (exception &e)
+        {
             cout << "Error: Invalid input" << endl;
             exit(1);
         }
-        
+
         graph.printGraph();
-        
+
         graph.isEulerian();
     }
-    else {
-        UndirectedGraph graph(numOfVertices);   // Create an undirected graph
-    
-        try {
+    else
+    {
+        UndirectedGraph graph(numOfVertices); // Create an undirected graph
+
+        try
+        {
             getEdgesFromUser(numOfEdges, numOfVertices, &graph);
         }
-        catch (exception &e) {
+        catch (exception &e)
+        {
             cout << "Error: Invalid input" << endl;
             exit(1);
         }
-    
+
         graph.printGraph();
-    
+
         graph.isEulerian();
     }
-    
+
     return 0;
-    
 }
