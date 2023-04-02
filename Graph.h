@@ -30,8 +30,8 @@ class Graph
     {
         return isDirected;
     }
-    void DFS(Graph &g, int *visited);
-    void visit(int v, int visited[]);
+    void DFS(Graph &g, int *);
+    void visit(int v, int *);
     virtual void addEdge(int src, int dest) = 0;
     virtual void isEulerian() = 0;
     virtual void printEulerianPath() = 0;
@@ -46,7 +46,7 @@ class DirectedGraph : public Graph
     {
     }
     void addEdge(int src, int dest) override;
-    bool isStrongConnected(const int *);
+    bool isStrongConnected(int *);
     bool isEntryLevelAndExitLevelEqual();
     void isEulerian() override;
     void printEulerianPath() override;

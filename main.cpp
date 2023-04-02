@@ -21,6 +21,10 @@ void getInputFromUser(char &isDirected, int &numOfVertices, int &numOfEdges)
     cout << "Please enter the number of edges in the graph:" << endl;
     cin >> numOfEdges;
 
+    if (numOfVertices <= 0 || numOfEdges <= 0)
+    {
+        throw exception();
+    }
     // We change number of vertices to start from 1 instead of 0
     numOfVertices++;
 }
@@ -35,7 +39,7 @@ void getEdgesFromUser(int numOfEdges, int numOfVertices, Graph *graph)
         cin >> src >> dest;
 
         // Check if the input is valid
-        if (src < 0 || src >= numOfVertices + 1 || dest < 0 || dest >= numOfVertices + 1)
+        if (src < 1 || src >= numOfVertices || dest < 0 || dest >= numOfVertices)
             throw exception();
 
         graph->addEdge(src, dest);
@@ -55,7 +59,7 @@ int main()
     }
     catch (exception &e)
     {
-        cout << "Error: Invalid input" << endl;
+        cout << "invalid input" << endl;
         exit(1);
     }
 
@@ -69,7 +73,7 @@ int main()
         }
         catch (exception &e)
         {
-            cout << "Error: Invalid input" << endl;
+            cout << "invalid input" << endl;
             exit(1);
         }
 
@@ -87,7 +91,7 @@ int main()
         }
         catch (exception &e)
         {
-            cout << "Error: Invalid input" << endl;
+            cout << "invalid input" << endl;
             exit(1);
         }
 
