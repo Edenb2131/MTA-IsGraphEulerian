@@ -14,10 +14,14 @@
 
 class Graph
 {
+    friend class DirectedGraph;
+    friend class UndirectedGraph;
+
   protected:
     std::vector<std::list<int>> adjacencyList;
     bool isDirected;
     int size; // numOfVertices
+    int numOfEdges;
 
   public:
     Graph(int size, bool isDirected);
@@ -26,12 +30,17 @@ class Graph
     {
         return size;
     }
+    int getNumOfEdges() const
+    {
+        return numOfEdges;
+    }
     bool getIsDirected()
     {
         return isDirected;
     }
     void DFS(Graph &g, int *);
     void visit(int v, int *);
+    bool isAllVerticesBlack(int *visited);
     virtual void addEdge(int src, int dest) = 0;
     virtual void isEulerian() = 0;
     virtual void printEulerianPath() = 0;
@@ -46,8 +55,10 @@ class DirectedGraph : public Graph
     {
     }
     void addEdge(int src, int dest) override;
-    bool isStrongConnected(int *);
+    bool isStronglyConnected();
     bool isEntryLevelAndExitLevelEqual();
+    DirectedGraph *buildTransposeGraph(DirectedGraph *g);
+    std::vector<int> findCircuit(int v, DirectedGraph *g);
     void isEulerian() override;
     void printEulerianPath() override;
 };
@@ -61,6 +72,7 @@ class UndirectedGraph : public Graph
     void addEdge(int src, int dest) override;
     bool isConnected();
     bool isAllLevelsOfEdgesEven();
+    std::vector<int> findCircuit(int v, UndirectedGraph *g);
     void isEulerian() override;
     void printEulerianPath() override;
 };

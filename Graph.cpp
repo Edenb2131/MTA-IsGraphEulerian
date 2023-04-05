@@ -6,9 +6,49 @@
 #include <iostream>
 using namespace std;
 
+vector<int> mergeInnerPaths(vector<int> path, vector<int> &innerPath, int pathIdx)
+{
+    vector<int> newPath;
+
+    // Push path[0...idx]
+    for (int i = 0; i < pathIdx; i++)
+    {
+        newPath.push_back(path[i]);
+    }
+
+    // Push inner path
+    for (int i = 0; i < innerPath.size(); i++)
+    {
+        newPath.push_back(innerPath[i]);
+    }
+
+    // Push [idx+1...]
+    for (int i = pathIdx + 1; i < path.size(); i++)
+    {
+        newPath.push_back(path[i]);
+    }
+
+    return newPath;
+}
+
+void printFormattedPath(vector<int> &path)
+{
+    cout << "(";
+    for (int i = 0; i < path.size(); i++)
+    {
+        cout << path[i];
+        if (i != path.size() - 1)
+        {
+            cout << ",";
+        }
+    }
+    cout << ")" << endl;
+}
+
 Graph::Graph(int size, bool isDirected)
 {
     this->size = size;
+    this->numOfEdges = 0;
     this->isDirected = isDirected;
     adjacencyList.resize(size);
 }
@@ -60,16 +100,7 @@ void Graph::visit(int v, int *visited)
     visited[v] = Black;
 }
 
-/// Functions for DirectedGraph ///
-
-// Add an edge to the directed graph at the end of the adjacency list as required
-void DirectedGraph::addEdge(int src, int dest)
-{
-    adjacencyList[src].push_back(dest);
-}
-
-// Checks if directed graph is strongly connected
-bool DirectedGraph::isStrongConnected(int *visited)
+bool Graph::isAllVerticesBlack(int *visited)
 {
     for (int i = 1; i < size; i++)
     {
@@ -78,6 +109,48 @@ bool DirectedGraph::isStrongConnected(int *visited)
             return false;
         }
     }
+    return true;
+}
+
+/// Functions for DirectedGraph ///
+
+// Add an edge to the directed graph at the end of the adjacency list as required
+void DirectedGraph::addEdge(int src, int dest)
+{
+    adjacencyList[src].push_back(dest);
+    numOfEdges++;
+}
+
+// Checks if directed graph is strongly connected
+bool DirectedGraph::isStronglyConnected()
+{
+    int *visited = new int[size];
+
+    DFS(*this, visited);
+
+    if (!isAllVerticesBlack(visited))
+    {
+        delete[] visited;
+        return false;
+    }
+
+    delete[] visited;
+
+    int *visitedTranspose = new int[size];
+    DirectedGraph *transposedGraph = buildTransposeGraph(this);
+
+    DFS(*transposedGraph, visited);
+
+    if (!isAllVerticesBlack(visited))
+    {
+        delete[] visitedTranspose;
+        delete transposedGraph;
+
+        return false;
+    }
+
+    delete[] visitedTranspose;
+    delete transposedGraph;
 
     return true;
 }
@@ -113,50 +186,77 @@ bool DirectedGraph::isEntryLevelAndExitLevelEqual()
     return true;
 }
 
+DirectedGraph *DirectedGraph::buildTransposeGraph(DirectedGraph *g)
+{
+    DirectedGraph gClone = *g;
+    DirectedGraph *transposedGraph = new DirectedGraph(gClone.size);
+
+    int current = 1;
+
+    while (current < transposedGraph->size)
+    {
+        if (gClone.adjacencyList[current].size() == 0)
+        {
+            current++;
+        }
+        else
+        {
+            int next = gClone.adjacencyList[current].front();
+            gClone.adjacencyList[current].pop_front();
+            transposedGraph->adjacencyList[next].push_back(current);
+        }
+    }
+
+    return transposedGraph;
+}
+
+vector<int> DirectedGraph::findCircuit(int v, DirectedGraph *g)
+{
+    vector<int> circuit(0);
+    int current = v;
+    circuit.push_back(current);
+
+    while (g->adjacencyList[current].size() != 0)
+    {
+        int neighborVertex = g->adjacencyList[current].front();
+        g->adjacencyList[current].pop_front();
+        g->numOfEdges--;
+        circuit.push_back(neighborVertex);
+        current = neighborVertex;
+    }
+
+    return circuit;
+}
+
 void DirectedGraph::isEulerian()
 {
-    int *visited = new int[size];
-
-    DFS(*this, visited);
-
-    if (isStrongConnected(visited) && isEntryLevelAndExitLevelEqual())
-    {
-        cout << "The graph is Eulerian" << endl;
-        printEulerianPath();
-    }
-    else
+    if (!(isStronglyConnected() && isEntryLevelAndExitLevelEqual()))
     {
         cout << "The graph is not Eulerian" << endl;
     }
 
-    delete[] visited;
+    cout << "The graph is Eulerian" << endl;
+    printEulerianPath();
 }
 
 void DirectedGraph::printEulerianPath()
 {
-    list<int> path;
+    DirectedGraph gClone = *this;
     int current = 1;
-    path.push_back(current);
+    int readIdx = 1; // Skipping first vertex, which is 1
+    vector<int> path = findCircuit(current, &gClone);
 
-    while (!path.empty())
+    while (gClone.numOfEdges != 0)
     {
-        if (adjacencyList[current].size() == 0)
-        {
-            cout << path.back() << " ";
-            path.pop_back();
-            if (!path.empty())
-                current = path.back();
-        }
-        else
-        {
-            int next = adjacencyList[current].front();
-            adjacencyList[current].pop_front();
-            path.push_back(next);
-            current = next;
-        }
+        current = path[readIdx];
+        vector<int> innerPath = findCircuit(current, &gClone);
+        path = mergeInnerPaths(path, innerPath, readIdx);
+        readIdx++;
     }
 
-    cout << endl;
+    printFormattedPath(path);
+
+    return;
 }
 
 /// Functions for UndirectedGraph ///
@@ -166,6 +266,7 @@ void UndirectedGraph::addEdge(int src, int dest)
 {
     adjacencyList[src].push_back(dest);
     adjacencyList[dest].push_back(src);
+    numOfEdges++;
 }
 
 bool UndirectedGraph::isConnected()
@@ -189,10 +290,10 @@ bool UndirectedGraph::isConnected()
 
 bool UndirectedGraph::isAllLevelsOfEdgesEven()
 {
+    UndirectedGraph gClone = *this;
     vector<int> levels;
     levels.reserve(size);
     int numOfVerticesWithOddEdges = 0;
-    std::vector<std::list<int>> adjacencyListCopy = adjacencyList;
 
     for (int i = 1; i < size; i++)
     {
@@ -201,13 +302,14 @@ bool UndirectedGraph::isAllLevelsOfEdgesEven()
 
     for (int i = 1; i < size; i++)
     {
-        while (!adjacencyListCopy[i].empty())
+        while (!gClone.adjacencyList[i].empty())
         {
-            int j = adjacencyListCopy[i].front();
+            int j = gClone.adjacencyList[i].front();
             levels[i]++;
             levels[j]++;
-            adjacencyListCopy[i].remove(j);
-            adjacencyListCopy[j].remove(i);
+            gClone.adjacencyList[i].remove(j);
+            gClone.adjacencyList[j].remove(i);
+            gClone.numOfEdges--;
         }
     }
 
@@ -228,43 +330,53 @@ bool UndirectedGraph::isAllLevelsOfEdgesEven()
     return true;
 }
 
+vector<int> UndirectedGraph::findCircuit(int v, UndirectedGraph *g)
+{
+    vector<int> circuit(0);
+    int current = v;
+    circuit.push_back(current);
+
+    while (g->adjacencyList[current].size() != 0)
+    {
+        int neighborVertex = g->adjacencyList[current].front();
+        g->adjacencyList[current].pop_front();
+        g->adjacencyList[neighborVertex].remove(current);
+        g->numOfEdges--;
+        circuit.push_back(neighborVertex);
+        current = neighborVertex;
+    }
+
+    return circuit;
+}
+
 void UndirectedGraph::isEulerian()
 {
-    if (isConnected() && isAllLevelsOfEdgesEven())
-    {
-        cout << "The graph is Eulerian" << endl;
-        printEulerianPath();
-    }
-    else
+    if (!(isConnected() && isAllLevelsOfEdgesEven()))
     {
         cout << "The graph is not Eulerian" << endl;
+        return;
     }
+
+    cout << "The graph is Eulerian" << endl;
+    printEulerianPath();
 }
 
 void UndirectedGraph::printEulerianPath()
 {
-    list<int> path;
+    UndirectedGraph gClone = *this;
     int current = 1;
-    path.push_back(current);
+    int readIdx = 1; // Skipping first vertex, which is 1
+    vector<int> path = findCircuit(current, &gClone);
 
-    while (!path.empty())
+    while (gClone.numOfEdges != 0)
     {
-        if (adjacencyList[current].size() == 0)
-        {
-            cout << path.back() << " ";
-            path.pop_back();
-            if (!path.empty())
-                current = path.back();
-        }
-        else
-        {
-            int next = adjacencyList[current].front();
-            adjacencyList[current].pop_front();
-            adjacencyList[next].remove(current);
-            path.push_back(next);
-            current = next;
-        }
+        current = path[readIdx];
+        vector<int> innerPath = findCircuit(current, &gClone);
+        path = mergeInnerPaths(path, innerPath, readIdx);
+        readIdx++;
     }
 
-    cout << endl;
+    printFormattedPath(path);
+
+    return;
 }
