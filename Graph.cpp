@@ -317,15 +317,9 @@ bool UndirectedGraph::isAllLevelsOfEdgesEven()
     {
         if (levels[i] % 2 != 0)
         {
-            // numOfVerticesWithOddEdges++;
             return false;
         }
     }
-
-    // if (numOfVerticesWithOddEdges != 0 && numOfVerticesWithOddEdges != 2)
-    // {
-    //     return false;
-    // }
 
     return true;
 }

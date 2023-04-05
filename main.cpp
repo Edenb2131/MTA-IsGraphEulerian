@@ -15,10 +15,10 @@ void getInputFromUser(char &isDirected, int &numOfVertices, int &numOfEdges)
     if (isDirected != 'y' && isDirected != 'n' && isDirected != 'Y' && isDirected != 'N')
         throw exception();
 
-    cout << "Please enter the number of vertices in the graph:" << endl;
+    // cout << "Please enter the number of vertices in the graph:" << endl;
     cin >> numOfVertices;
 
-    cout << "Please enter the number of edges in the graph:" << endl;
+    // cout << "Please enter the number of edges in the graph:" << endl;
     cin >> numOfEdges;
 
     if (numOfVertices <= 0 || numOfEdges <= 0)
@@ -52,6 +52,7 @@ int main()
     char isDirected;
     int numOfVertices; // This will be the required n
     int numOfEdges;    // This will be the required m
+    Graph *graph;
 
     try
     {
@@ -65,40 +66,26 @@ int main()
 
     if (isDirected == 'y' || isDirected == 'Y')
     {
-        DirectedGraph graph(numOfVertices); // Create a directed graph
-
-        try
-        {
-            getEdgesFromUser(numOfEdges, numOfVertices, &graph);
-        }
-        catch (exception &e)
-        {
-            cout << "invalid input" << endl;
-            exit(1);
-        }
-
-        graph.printGraph();
-
-        graph.isEulerian();
+        graph = new DirectedGraph(numOfVertices);
     }
     else
     {
-        UndirectedGraph graph(numOfVertices); // Create an undirected graph
-
-        try
-        {
-            getEdgesFromUser(numOfEdges, numOfVertices, &graph);
-        }
-        catch (exception &e)
-        {
-            cout << "invalid input" << endl;
-            exit(1);
-        }
-
-        graph.printGraph();
-
-        graph.isEulerian();
+        graph = new UndirectedGraph(numOfVertices);
     }
+
+    try
+    {
+        getEdgesFromUser(numOfEdges, numOfVertices, graph);
+    }
+    catch (exception &e)
+    {
+        cout << "invalid input" << endl;
+        exit(1);
+    }
+
+    // graph->printGraph();
+
+    graph->isEulerian();
 
     return 0;
 }
